@@ -1,0 +1,17 @@
+{
+  "name": "rgb-game",
+  "version": "1.0.0",
+  "description": "Pew pew pew.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "watchify js/main.js -o app.js -dv",
+    "build": "browserify js/main.js | uglifyjs -mc > app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^9.0.3",
+    "uglify-js": "^2.4.16",
+    "watchify": "^2.4.0"
+  }
+}
