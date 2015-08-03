@@ -10,8 +10,6 @@ function preload() {
   game.load.spritesheet('bullets', 'gfx/shot.png', 18, 17, 3);
   game.load.spritesheet('asteroid1', 'gfx/asteroid1.png', 64, 64);
   game.load.spritesheet('asteroid2', 'gfx/asteroid2.png', 64, 64);
-  game.load.spritesheet('asteroid3', 'gfx/asteroid3.png', 64, 64);
-  game.load.spritesheet('asteroid4', 'gfx/asteroid4.png', 64, 64);
   game.load.spritesheet('explosion', 'gfx/explosion.png', 64, 64);
 }
 
