@@ -1,13 +1,25 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update }),
-    player, cursors, asteroids, explosions, colorCount = {r: 5, g: 5, b: 5}, bulletTime = 0;
+    player, cursors, asteroids, explosions, text, colorCount = {r: 5, g: 5, b: 5}, bulletTime = 0, score = 0, lifes = 3;
 
 var WORLD_WIDTH = 2024, WORLD_HEIGHT = 1232;
 
 //
 // Preload
 //
+WebFontConfig = {
+    //  'active' means all requested fonts have finished loading
+    //  We set a 1 second delay before calling 'createText'.
+    //  For some reason if we don't the browser cannot render the text the first time it's created.
+    active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
+
+    //  The Google Fonts we want to load (specify as many as you like in the array)
+    google: {
+      families: ['Orbitron::latin']
+    }
+};
 
 function preload() {
+  game.load.script('webfont', 'https:////ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
   game.load.image('space', 'gfx/space.jpg');
   game.load.spritesheet('player', 'gfx/ship.png', 64, 33, 4);
   game.load.spritesheet('orbs', 'gfx/orbs.png', 11, 11, 3);
@@ -111,9 +123,12 @@ function update() {
   game.physics.arcade.collide(asteroids, asteroids);
   ['r', 'g', 'b'].forEach(function(type) {
     game.physics.arcade.collide(player, asteroids[type], function(player, asteroid) {
+      asteroid.kill();
       var explosion = explosions.create(player.body.x, player.body.y, 'explosion', 0);
       explosion.animations.add('boom', null, 20, false);
       explosion.animations.play('boom');
+      lifes--;
+      updateText();
     });
 
     game.physics.arcade.collide(bullets[type], asteroids[type], function(bullet, asteroid) {
@@ -122,6 +137,8 @@ function update() {
       explosion.animations.play('boom');
       asteroid.kill();
       bullet.kill();
+      score++;
+      updateText();
     });
     asteroids[type].forEachExists(worldWrap);
   });
@@ -197,4 +214,19 @@ function collectOrb(player, orb) {
 
   orb.angle = Math.random() * 360;
   game.physics.arcade.accelerationFromRotation(orb.rotation, 20, orb.body.acceleration);
+}
+
+function createText() {
+  text = game.add.text(game.width / 2, 10, "Lifes: 3 - Score: 0", {
+    font: '20px Orbitron',
+    fill: '#fff',
+    stroke: '#ccf',
+    align: 'center'
+  });
+  text.fixedToCamera = true;
+  text.anchor.x = 0.5;
+}
+
+function updateText() {
+  text.text = "Lifes: " + lifes + " - Score: " + score;
 }
