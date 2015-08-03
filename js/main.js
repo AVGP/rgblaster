@@ -120,8 +120,8 @@ function create() {
 //
 function update() {
   // Collisions
-  game.physics.arcade.collide(asteroids, asteroids);
   ['r', 'g', 'b'].forEach(function(type) {
+    ['r', 'g', 'b'].forEach(function(otherType) { game.physics.arcade.collide(asteroids[type], asteroids[otherType]); });
     game.physics.arcade.collide(player, asteroids[type], function(player, asteroid) {
       asteroid.kill();
       var explosion = explosions.create(player.body.x, player.body.y, 'explosion', 0);
