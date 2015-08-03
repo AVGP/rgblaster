@@ -1,5 +1,5 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update }),
-    player, cursors, asteroids, currentColor = 'r', colorCount = {r: 5, g: 5, b: 5}, bulletTime = 0;
+    player, cursors, asteroids, explosions, currentColor = 'r', colorCount = {r: 5, g: 5, b: 5}, bulletTime = 0;
 
 var WORLD_WIDTH = 2024, WORLD_HEIGHT = 1232;
 
@@ -49,33 +49,34 @@ function create() {
   }
 
   // Asteroids
-  asteroids = game.add.group();
-  for(i=0; i < 20; i++) {
-    var asteroid = asteroids.create(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT, 'asteroid' + (Math.floor(Math.random() * 2)+1), 0);
-    asteroid.anchor.set(0.5);
-    asteroid.animations.add('spin', null, 10, true);
-    asteroid.animations.play('spin');
-    game.physics.enable(asteroid, Phaser.Physics.ARCADE);
-    asteroid.body.bounce.x = asteroid.body.bounce.y = 1;
-    asteroid.body.gravity.x = asteroid.body.gravity.y = 0;
-    asteroid.body.maxVelocity.set(100);
-    asteroid.body.offset.set(0, 0);
-    asteroid.body.width = asteroid.body.height = 32;
-    asteroid.angle = Math.random() * 360;
-    game.physics.arcade.accelerationFromRotation(asteroid.rotation, Math.random() * 100, asteroid.body.acceleration);
-    asteroid.type = ['r', 'g', 'b'][Math.floor(Math.random() * 3)];
-    switch(asteroid.type) {
-      case 'r':
-        asteroid.tint = 0xff8888;
-      break;
-      case 'g':
-        asteroid.tint = 0x88ff88;
-      break;
-      case 'b':
-        asteroid.tint = 0x8888ff;
-      break;
+  asteroids = {r: game.add.group(), g: game.add.group(), b: game.add.group() };
+  ['r', 'g', 'b'].forEach(function(type) {
+    for(i=0; i < 20; i++) {
+      var asteroid = asteroids[type].create(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT, 'asteroid' + (Math.floor(Math.random() * 2)+1), 0);
+      asteroid.anchor.set(0.5);
+      asteroid.animations.add('spin', null, 10, true);
+      asteroid.animations.play('spin');
+      game.physics.enable(asteroid, Phaser.Physics.ARCADE);
+      asteroid.body.bounce.x = asteroid.body.bounce.y = 1;
+      asteroid.body.gravity.x = asteroid.body.gravity.y = 0;
+      asteroid.body.maxVelocity.set(100);
+      asteroid.body.offset.set(0, 0);
+      asteroid.body.width = asteroid.body.height = 32;
+      asteroid.angle = Math.random() * 360;
+      game.physics.arcade.accelerationFromRotation(asteroid.rotation, Math.random() * 100, asteroid.body.acceleration);
+      switch(type) {
+        case 'r':
+          asteroid.tint = 0xff8888;
+        break;
+        case 'g':
+          asteroid.tint = 0x88ff88;
+        break;
+        case 'b':
+          asteroid.tint = 0x8888ff;
+        break;
+      }
     }
-  }
+  });
 
   // Player
   player = game.add.sprite(game.width / 2, game.height / 2, 'player', 1);
@@ -90,19 +91,30 @@ function create() {
   player.body.collideWorldBounds = true;
   player.ship.body.moves = false;
   game.camera.follow(player);
-/*
-  //explosion
-  var explosion = game.add.sprite(100, 100, 'explosion', 0);
-  explosion.animations.add('boom', null, 20, true);
-  explosion.animations.play('boom');
-*/
+
+  explosions = game.add.group();
 }
 
 function update() {
   // Collisions
   game.physics.arcade.collide(asteroids, asteroids);
-  game.physics.arcade.collide(player, asteroids, function(player, asteroid) {
+  ['r', 'g', 'b'].forEach(function(type) {
+    game.physics.arcade.collide(player, asteroids[type], function(player, asteroid) {
+      var explosion = explosions.create(player.body.x, player.body.y, 'explosion', 0);
+      explosion.animations.add('boom', null, 20, false);
+      explosion.animations.play('boom');
+    });
+
+    game.physics.arcade.collide(bullets[type], asteroids[type], function(bullet, asteroid) {
+      var explosion = explosions.create(asteroid.body.x, asteroid.body.y, 'explosion', 0);
+      explosion.animations.add('boom', null, 20, false);
+      explosion.animations.play('boom');
+      asteroid.kill();
+      bullet.kill();
+    });
+    asteroids[type].forEachExists(worldWrap);
   });
+
   game.physics.arcade.collide(player, orbs, collectOrb);
 
   // Controls
@@ -116,7 +128,6 @@ function update() {
   if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) fireBullet();
 
   orbs.forEachExists(worldWrap);
-  asteroids.forEachExists(worldWrap);
 }
 
 function worldWrap(sprite) {
