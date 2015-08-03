@@ -1,7 +1,11 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update }),
-    player, cursors, asteroids, explosions, currentColor = 'r', colorCount = {r: 5, g: 5, b: 5}, bulletTime = 0;
+    player, cursors, asteroids, explosions, colorCount = {r: 5, g: 5, b: 5}, bulletTime = 0;
 
 var WORLD_WIDTH = 2024, WORLD_HEIGHT = 1232;
+
+//
+// Preload
+//
 
 function preload() {
   game.load.image('space', 'gfx/space.jpg');
@@ -13,6 +17,10 @@ function preload() {
   game.load.spritesheet('explosion', 'gfx/explosion.png', 64, 64);
 }
 
+//
+// Create
+//
+
 function create() {
 
   // Game world
@@ -21,7 +29,7 @@ function create() {
 
   //  Game input
   cursors = game.input.keyboard.createCursorKeys();
-  game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR, Phaser.Keyboard.C ]);
 
   // Orbs
   orbs = game.add.group();
@@ -51,7 +59,7 @@ function create() {
   // Asteroids
   asteroids = {r: game.add.group(), g: game.add.group(), b: game.add.group() };
   ['r', 'g', 'b'].forEach(function(type) {
-    for(i=0; i < 20; i++) {
+    for(i=0; i < 15; i++) {
       var asteroid = asteroids[type].create(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT, 'asteroid' + (Math.floor(Math.random() * 2)+1), 0);
       asteroid.anchor.set(0.5);
       asteroid.animations.add('spin', null, 10, true);
@@ -95,6 +103,9 @@ function create() {
   explosions = game.add.group();
 }
 
+//
+// Update
+//
 function update() {
   // Collisions
   game.physics.arcade.collide(asteroids, asteroids);
@@ -115,7 +126,7 @@ function update() {
     asteroids[type].forEachExists(worldWrap);
   });
 
-  game.physics.arcade.collide(player, orbs, collectOrb);
+  game.physics.arcade.overlap(player, orbs, collectOrb);
 
   // Controls
   if (cursors.up.isDown) game.physics.arcade.accelerationFromRotation(player.rotation, 200, player.body.acceleration);
@@ -126,9 +137,22 @@ function update() {
   else player.body.angularVelocity = 0;
 
   if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) fireBullet();
-
+  game.input.keyboard.onUpCallback = function(e) {
+      if(e.keyCode === Phaser.Keyboard.C) {
+        if(player.frame == 3) {
+          player.frame = 1;
+        } else {
+          player.frame = player.frame + 1;
+        }
+        console.log(player.frame);
+      }
+  };
   orbs.forEachExists(worldWrap);
 }
+
+//
+// Helpers
+//
 
 function worldWrap(sprite) {
   if(sprite.x < 0) sprite.x = WORLD_WIDTH;
@@ -140,7 +164,7 @@ function worldWrap(sprite) {
 
 function fireBullet () {
   if (game.time.now > bulletTime) {
-    var bullet = bullets[currentColor].getFirstExists(false);
+    var bullet = bullets[['r', 'g', 'b'][player.frame-1]].getFirstExists(false);
 
     if (bullet) {
       bullet.reset(player.body.x + 30, player.body.y + 20);
@@ -168,7 +192,6 @@ function collectOrb(player, orb) {
   colorCount[color]++;
   var bullet = bullets[color].create(0, 0, 'bullets', orb.frame, false);
   bullet.anchor.set(0.5);
-  currentColor = color;
   orb.reset(Math.random() * WORLD_WIDTH - 11, Math.random() * WORLD_HEIGHT - 11, Math.floor(Math.random() * 3));
   player.frame = orb.frame + 1;
 
