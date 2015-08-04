@@ -1,12 +1,47 @@
 <!doctype html>
 <html lang="de">
     <head>
-        <title>RGB</title>
+        <title>RGBlaster</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
+        <link href='http://fonts.googleapis.com/css?family=Orbitron:400,700' rel='stylesheet' type='text/css'>
+        <style>
+          body {
+            background: black;
+            color: white;
+            font-family: 'Orbitron' sans-serif;
+          }
+
+          h1, .centered { text-align: center; }
+
+          a, a:visited {
+            color: lightgreen;
+            font-weight: bold;
+          }
+        </style>
     </head>
     <body>
-        <script src="phaser.min.js"></script>
-        <script src="app.js"></script>
+      <h1><span style="color: red">R</span><span style="color: green">G</span><span style="color: blue">B</span>laster</h1>
+      <p class="centered">A colourful space shooter</p>
+
+      <h2>Mission</h2>
+
+      <p>
+        Clear this sector from all asteroids, but beware: The asteroids are divided into <strong>three different groups</strong>:
+        <span style="color: red">Red</span>, <span style="color:green">Green</span> and <span style="color: blue">Blue</span> asteroids.
+      </p>
+      <p>Each group can only be destroyed by a bullet of the same colour, so you need to make sure to load the right type of ammunition.</p>
+      <p>
+          As this is deep space, you only have limited supplies.<br>
+          You have enough energy to fire 5 bullets of each type, but you can collect the floating orbs to increase your capacity.
+      </p>
+      <p>Good luck.</p>
+
+      <h2>Controls</h2>
+      <img src="gfx/keyboard.png" alt="Keyboard controls: Arrow keys to steer the ship, C to switch colour, Space bar to shoot">
+
+      <h2>Launch</h2>
+      <p>When you're ready <a href="game.html">hit launch</a>.</p>
+
     </body>
 </html>
