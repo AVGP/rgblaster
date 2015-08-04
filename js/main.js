@@ -3,6 +3,14 @@ var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create
 
 var WORLD_WIDTH = 2024, WORLD_HEIGHT = 1232;
 
+var highscores = [];
+try {
+  highscores = JSON.parse(localStorage.getItem('highscores'));
+  if(highscores === null) highscores = [];
+} catch(e) {
+  // nothing needed.
+}
+
 //
 // Preload
 //
@@ -128,6 +136,9 @@ function update() {
       explosion.animations.add('boom', null, 20, false);
       explosion.animations.play('boom');
       lifes--;
+      if(lifes === 0) {
+        gameOver();
+      }
       updateText();
     });
 
@@ -172,11 +183,20 @@ function update() {
 //
 
 function worldWrap(sprite) {
-  if(sprite.x < 0) sprite.x = WORLD_WIDTH;
-  else if(sprite.x > WORLD_WIDTH) sprite.x = 0;
+  if(sprite.body) {
+    if(sprite.body.x < 0) sprite.body.x = WORLD_WIDTH;
+    else if(sprite.body.x > WORLD_WIDTH) sprite.body.x = 0;
 
-  if(sprite.y < 0) sprite.y = WORLD_HEIGHT;
-  else if(sprite.y > WORLD_HEIGHT) sprite.y = 0;
+    if(sprite.body.y < 0) sprite.body.y = WORLD_HEIGHT;
+    else if(sprite.body.y > WORLD_HEIGHT) sprite.body.y = 0;
+
+  } else {
+    if(sprite.x < 0) sprite.x = WORLD_WIDTH;
+    else if(sprite.x > WORLD_WIDTH) sprite.x = 0;
+
+    if(sprite.y < 0) sprite.y = WORLD_HEIGHT;
+    else if(sprite.y > WORLD_HEIGHT) sprite.y = 0;
+  }
 }
 
 function fireBullet () {
@@ -229,4 +249,19 @@ function createText() {
 
 function updateText() {
   text.text = "Lifes: " + lifes + " - Score: " + score;
+}
+
+function gameOver() {
+  var name = window.prompt('Game over!\nWhat is your name?', 'Player');
+  highscores.push({name: name, score: score});
+  highscores = highscores.sort(function(a, b) { return a.score < b.score; });
+  try {
+    localStorage.setItem('highscores', JSON.stringify(highscores.slice(0, 10)));
+  } catch(e) {}
+  var highscoreMsg = '';
+  for(var i=0; i<Math.min(10, highscores.length); i++) {
+    highscoreMsg += highscores[i].name + ' - ' + highscores[i].score + '\n';
+  }
+  alert('Highscores:\n' + highscoreMsg);
+  window.location.reload();
 }
